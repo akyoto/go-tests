@@ -1,2 +1,3 @@
-# sync-map-test
-Testing sync.Map
+# Go tests
+
+Just a collection of random tests.
