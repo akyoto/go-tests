@@ -17,6 +17,7 @@ func main() {
 		}
 
 		go accept(listener)
+		// time.Sleep(100 * time.Millisecond)
 		listener.Close()
 
 		i++
