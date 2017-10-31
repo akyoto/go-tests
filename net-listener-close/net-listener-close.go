@@ -13,12 +13,17 @@ func main() {
 
 		if err != nil {
 			fmt.Printf("failure @ iteration %d | %s\n", i, err)
+			i++
 			continue
 		}
 
 		go accept(listener)
 		// time.Sleep(100 * time.Millisecond)
-		listener.Close()
+		err = listener.Close()
+
+		if err != nil {
+			fmt.Printf("close failure @ iteration %d | %s\n", i, err)
+		}
 
 		i++
 	}
