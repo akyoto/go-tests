@@ -6,11 +6,14 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"github.com/aerogo/packet"
 )
 
 const (
 	address   = ":5000"
-	nodeCount = 3
+	nodeCount = 2
 )
 
 func main() {
@@ -37,17 +40,21 @@ func startNode(id int) {
 }
 
 func client(id int) {
-	var connection *net.UDPConn
+	var (
+		connection *net.UDPConn
+		udpAddress *net.UDPAddr
+		err        error
+	)
 
 	for {
-		udpAddr, err := net.ResolveUDPAddr("udp", address)
+		udpAddress, err = net.ResolveUDPAddr("udp", address)
 
 		if err != nil {
 			fmt.Printf("[%d] Error resolving address: %v\n", id, err)
 			continue
 		}
 
-		connection, err = net.DialUDP("udp", nil, udpAddr)
+		connection, err = net.DialUDP("udp", nil, udpAddress)
 
 		if err != nil {
 			fmt.Printf("[%d] Error connecting to server: %v\n", id, err)
@@ -57,8 +64,24 @@ func client(id int) {
 		break
 	}
 
-	fmt.Printf("[%d] Successfully connected to server: %v\n", id, connection)
+	fmt.Printf("[%d] Successfully connected to server %v\n", id, connection.RemoteAddr())
 	defer connection.Close()
+
+	stream := packet.NewStream(0)
+
+	stream.OnError(func(ioErr packet.IOError) {
+		fmt.Printf("[%d] Error sending message to server: %v\n", id, ioErr.Error)
+	})
+
+	stream.SetConnection(connection)
+	stream.Outgoing <- packet.New(0, []byte("ping"))
+	time.Sleep(time.Hour)
+
+	// _, err = connection.Write([]byte("ping"))
+
+	// if err != nil {
+	// 	fmt.Printf("[%d] Error sending message to server: %v\n", id, err)
+	// }
 }
 
 func server(id int, listener net.PacketConn) {
