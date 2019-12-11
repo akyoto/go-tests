@@ -5,6 +5,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"runtime"
 	"time"
 )
 
@@ -42,6 +43,10 @@ func main() {
 			lowestTime = elapsed
 			lowestSize = i
 		}
+
+		file = nil
+		buffer = nil
+		runtime.GC()
 	}
 
 	fmt.Printf("Fastest read with buffer size of %d bytes @ %d ns\n", lowestSize, lowestTime)
